@@ -183,6 +183,22 @@ readinessProbe:
   timeoutSeconds: 5
 
 # -----------------------------------------------------------------------------
+# Startup probe
+#
+# Kubernetes holds off liveness/readiness checks until startup succeeds, so a
+# slow start (migrations, Redis connect, token-blocklist warm-up, backfill)
+# no longer risks a liveness-kill restart loop. Generous budget: 30 x 5s = 150s.
+# Set to null to disable. Once this is in place, the liveness probe's
+# initialDelaySeconds can be lowered since slow startups are covered here.
+# -----------------------------------------------------------------------------
+startupProbe:
+  httpGet:
+    path: /health/liveness
+    port: http
+  periodSeconds: 5
+  failureThreshold: 30
+
+# -----------------------------------------------------------------------------
 # Kubernetes Secret reference
 #
 # ALL sensitive values are sourced from a pre-existing Kubernetes Secret named
